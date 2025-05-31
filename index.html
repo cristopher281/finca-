@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>*Registro de Fincas Valladares*</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Heroicons CDN para iconos -->
+  <script src="https://unpkg.com/feather-icons"></script>
+  <!-- Incluye Chart.js CDN antes de tu script principal -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="futurista.css">
+</head>
+<body class="bg-gradient-to-br from-blue-500 to-green-400 min-h-screen flex items-center justify-center">
+  <!-- Pantalla de login -->
+  <div id="login" class="w-full max-w-md bg-white/90 rounded-2xl shadow-2xl p-8 flex flex-col items-center">
+    <h2 class="text-2xl font-bold text-blue-700 mb-4 text-center">Iniciar Sesión</h2>
+    <form id="formLogin" class="space-y-4 w-full">
+      <div>
+        <label class="block text-gray-700 font-medium mb-1" id="labelPass">Crea tu contraseña</label>
+        <input type="password" id="password" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+      </div>
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition flex items-center justify-center gap-2">
+        <span data-feather="log-in"></span> Entrar
+      </button>
+    </form>
+    <div id="loginMensaje" class="hidden mt-4 text-center"></div>
+  </div>
+
+  <div id="portada" class="w-full max-w-md bg-white/90 rounded-2xl shadow-2xl p-8 flex flex-col items-center hidden">
+    <img src="img/logo-finca.png" alt="Logo" class="w-24 h-24 mb-4 rounded-full shadow-lg border-4 border-blue-200 object-cover">
+    <h1 class="text-3xl font-extrabold text-blue-700 mb-2 text-center">Registro de Fincas</h1>
+    <p class="text-gray-600 mb-6 text-center">Gestiona y registra tus fincas fácilmente, usando las capacidades de tu dispositivo.</p>
+    <div class="flex flex-col gap-4 w-full">
+      <!-- Sustituye el botón de cámara por el input de archivo avanzado -->
+      <label class="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-3 rounded-xl text-lg font-semibold shadow hover:bg-green-700 transition active:scale-95 cursor-pointer">
+        <span data-feather="upload"></span> Subir recibo o documento
+        <input type="file" id="inputArchivoRecibo" accept="image/*,.pdf,.csv,.json" class="hidden" onchange="procesarArchivoRecibo(event)">
+      </label>
+      <button type="button" onclick="mostrarNotificacion()" class="w-full flex items-center justify-center gap-2 bg-yellow-500 text-white py-3 rounded-xl text-lg font-semibold shadow hover:bg-yellow-600 transition active:scale-95">
+        <span data-feather="bell"></span> Notificar
+      </button>
+      <button type="button" onclick="mostrarRegistro()" class="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-xl text-lg font-semibold shadow hover:bg-blue-700 transition active:scale-95">
+        <span data-feather="edit"></span> Registrar Finca
+      </button>
+    </div>
+    <img id="previewFoto" class="mt-6 w-full rounded-lg hidden" alt="Foto tomada" />
+  </div>
+
+  <!-- Ventana de registro oculta por defecto -->
+  <div id="registroFinca" class="hidden w-full max-w-md bg-white/90 rounded-2xl shadow-2xl p-8 flex flex-col items-center">
+    <button onclick="volverPortada()" class="self-start mb-4 text-blue-600 hover:underline flex items-center gap-2">
+      <span data-feather="arrow-left"></span> Volver
+    </button>
+    <h2 class="text-2xl font-bold text-blue-700 mb-4 text-center">Formulario de Registro</h2>
+    <form id="formFinca" class="space-y-4 w-full">
+      <div>
+        <label class="block text-gray-700 font-medium mb-1">Nombre de la finca</label>
+        <input type="text" id="nombre" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+      </div>
+      <div>
+        <label class="block text-gray-700 font-medium mb-1">Coordenadas del terreno</label>
+        <div class="flex gap-2">
+          <input type="text" id="coordenadas" class="flex-1 border border-gray-300 rounded px-3 py-2 bg-gray-100" placeholder="Ej: 12.3456, -87.6543" readonly>
+          <button type="button" onclick="getLocation()" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition flex items-center gap-1">
+            <span data-feather="map-pin"></span>
+          </button>
+        </div>
+      </div>
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition flex items-center justify-center gap-2">
+        <span data-feather="save"></span> Guardar Finca
+      </button>
+    </form>
+    <div id="mensaje" class="hidden mt-4 text-center"></div>
+    <!-- Botón para abrir el panel de finca SOLO aquí -->
+    <a href="panel-finca.html" target="_blank" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 mt-4 inline-block">
+      <span data-feather="activity"></span> Panel de Finca
+    </a>
+  </div>
+
+  <!-- Nueva ventana de información de la finca -->
+  <div id="infoFinca" class="hidden w-full max-w-md bg-white/90 rounded-2xl shadow-2xl p-8 flex flex-col items-center">
+    <button onclick="volverPortadaDesdeInfo()" class="self-start mb-4 text-blue-600 hover:underline flex items-center gap-2">
+      <span data-feather="arrow-left"></span> Volver
+    </button>
+    <h2 class="text-2xl font-bold text-blue-700 mb-4 text-center">Información de la Finca</h2>
+    <div class="w-full space-y-4">
+      <div class="bg-blue-100 rounded p-3">
+        <h3 class="font-semibold text-blue-700">Nombre de la finca:</h3>
+        <input id="infoNombre" class="text-gray-700 w-full border rounded px-2 py-1 bg-white" />
+      </div>
+      <div class="bg-green-100 rounded p-3">
+        <h3 class="font-semibold text-green-700">Coordenadas del terreno:</h3>
+        <div class="flex gap-2">
+          <input id="infoCoordenadas" class="text-gray-700 flex-1 border rounded px-2 py-1 bg-white" placeholder="Ej: 12.3456, -87.6543" />
+          <button type="button" onclick="getLocationInfo()" class="bg-gray-600 text-white px-3 rounded hover:bg-gray-700 flex items-center gap-1">
+            <span data-feather="map-pin"></span>
+          </button>
+        </div>
+      </div>
+      <div class="bg-yellow-100 rounded p-3">
+        <h3 class="font-semibold text-yellow-700 mb-2">Ingresos</h3>
+        <form id="formIngreso" class="flex gap-2 mb-2 flex-wrap">
+          <input type="number" id="montoIngreso" class="flex-1 border rounded px-2 py-1" placeholder="Monto" min="0" required>
+          <input type="text" id="origenIngreso" class="flex-1 border rounded px-2 py-1" placeholder="Origen (ej: Venta café, Subsidio...)" required>
+          <button type="submit" class="bg-yellow-500 text-white px-3 rounded hover:bg-yellow-600">Agregar</button>
+        </form>
+        <ul id="listaIngresos" class="text-gray-700 text-sm mb-2"></ul>
+        <div class="font-semibold">Total ingresos: $<span id="totalIngresos">0</span></div>
+      </div>
+      <div class="bg-red-100 rounded p-3">
+        <h3 class="font-semibold text-red-700 mb-2">Egresos</h3>
+        <form id="formEgreso" class="flex gap-2 mb-2">
+          <input type="number" id="montoEgreso" class="flex-1 border rounded px-2 py-1" placeholder="Monto" min="0" required>
+          <button type="submit" class="bg-red-500 text-white px-3 rounded hover:bg-red-600">Agregar</button>
+        </form>
+        <ul id="listaEgresos" class="text-gray-700 text-sm mb-2"></ul>
+        <div class="font-semibold">Total egresos: $<span id="totalEgresos">0</span></div>
+      </div>
+      <div class="bg-purple-100 rounded p-3">
+        <h3 class="font-semibold text-purple-700 mb-2">Inversiones</h3>
+        <form id="formInversion" class="flex flex-col sm:flex-row gap-3 mb-3">
+          <input type="number" id="montoInversion" class="flex-1 border border-purple-300 rounded px-3 py-2 focus:ring-2 focus:ring-purple-400" placeholder="Monto" min="0" required>
+          <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">Agregar</button>
+        </form>
+        <ul id="listaInversiones" class="text-gray-700 text-sm mb-2"></ul>
+        <div class="font-semibold text-purple-700">
+          Inversiones rápidas: $<span id="totalInversionesRapidas">0</span>
+          <br>
+          Inversiones monitoreadas: $<span id="totalInversionesDetalladas">0</span>
+          <br>
+          <span class="underline">Total inversiones:</span> $<span id="totalInversiones">0</span>
+        </div>
+        <button onclick="mostrarVentanaInversiones()" class="mt-4 bg-gradient-to-r from-purple-600 via-purple-500 to-purple-700 text-white px-5 py-2 rounded-xl shadow hover:scale-105 transition flex items-center gap-2">
+          <span data-feather="monitor"></span>
+          Monitorear Inversiones
+        </button>
+      </div>
+      <div class="bg-gray-100 rounded p-3">
+        <h3 class="font-semibold text-gray-700 mb-2">Planilla</h3>
+        <form id="formPlanilla" class="flex gap-2 mb-2 flex-wrap">
+          <input type="text" id="nombreEmpleado" class="flex-1 border rounded px-2 py-1" placeholder="Empleado" required>
+          <input type="number" id="sueldoEmpleado" class="w-24 border rounded px-2 py-1" placeholder="Sueldo" min="0" required>
+          <select id="tipoEmpleado" class="w-32 border rounded px-2 py-1" required onchange="mostrarObrerosMasivos()">
+            <option value="" disabled selected>Tipo</option>
+            <option value="Obrero">Obrero</option>
+            <option value="Capataz">Capataz</option>
+            <option value="Administrador">Administrador</option>
+            <option value="Temporal">Temporal</option>
+            <option value="Otro">Otro</option>
+          </select>
+          <button type="submit" class="bg-gray-500 text-white px-3 rounded hover:bg-gray-600">Agregar</button>
+        </form>
+        <!-- Campo para agregar obreros masivamente -->
+        <div id="obrerosMasivos" class="hidden mb-2">
+          <label class="block text-gray-700 text-sm mb-1">Agregar varios obreros (separados por coma):</label>
+          <textarea id="nombresObreros" rows="2" class="w-full border rounded px-2 py-1 mb-2" placeholder="Ejemplo: Juan, Pedro, María"></textarea>
+          <input type="number" id="sueldoObreros" class="w-32 border rounded px-2 py-1 mb-2" placeholder="Sueldo" min="0">
+          <button type="button" onclick="agregarObrerosMasivos()" class="bg-green-600 text-white px-3 rounded hover:bg-green-700">Agregar Obreros</button>
+        </div>
+        <!-- Nueva tabla para la planilla -->
+        <div class="mb-2">
+          <input type="text" id="busquedaPlanilla" class="w-full border rounded px-2 py-1" placeholder="Buscar trabajador por nombre...">
+          <button onclick="mostrarVentanaPlanilla()"
+            class="ml-2 flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-700 to-purple-700 text-white shadow-lg hover:scale-105 hover:from-cyan-400 hover:to-purple-600 transition-all duration-300 border-2 border-blue-400"
+            title="Ver Planilla Completa">
+            <!-- Ícono futurista tipo "play" en círculo -->
+            <span>
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                <circle cx="18" cy="18" r="16" fill="url(#grad1)" stroke="#60A5FA" stroke-width="2"/>
+                <polygon points="15,12 25,18 15,24" fill="#fff" />
+                <defs>
+                  <radialGradient id="grad1" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#38bdf8"/>
+                    <stop offset="100%" stop-color="#6366f1"/>
+                  </radialGradient>
+                </defs>
+              </svg>
+            </span>
+            <span class="hidden sm:inline">Planilla Completa</span>
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-xs text-left border border-gray-300 bg-white rounded">
+            <thead>
+              <tr class="bg-gray-200">
+                <th class="px-2 py-1 border border-gray-300">N°</th>
+                <th class="px-2 py-1 border border-gray-300">Nombre</th>
+                <th class="px-2 py-1 border border-gray-300">Tipo</th>
+                <th class="px-2 py-1 border border-gray-300">Sueldo</th>
+                <th class="px-2 py-1 border border-gray-300">Fecha y Hora</th>
+                <th class="px-2 py-1 border border-gray-300">Estado</th>
+              </tr>
+            </thead>
+            <tbody id="tablaPlanilla">
+              <!-- Aquí se llenan los empleados dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="bg-green-50 rounded p-3">
+        <h3 class="font-semibold text-green-700">Resumen Semanal</h3>
+        <div class="font-semibold">Balance semanal: $<span id="balanceSemanal">0</span></div>
+        <button onclick="guardarTodo()" class="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Guardar Cambios</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agrega este nuevo div para la ventana de la tabla completa de trabajadores, después de #infoFinca -->
+  <div id="ventanaPlanilla" class="hidden w-full max-w-3xl bg-white/95 rounded-2xl shadow-2xl p-8 flex flex-col items-center">
+    <button onclick="volverInfoFinca()" class="self-start mb-4 text-blue-600 hover:underline flex items-center gap-2">
+      <span data-feather="arrow-left"></span> Volver
+    </button>
+    <h2 class="text-2xl font-bold text-blue-700 mb-4 text-center">Planilla Completa de Trabajadores</h2>
+    <div class="mb-4 w-full">
+      <input type="text" id="busquedaPlanillaCompleta" class="w-full border rounded px-2 py-1" placeholder="Buscar trabajador por nombre...">
+    </div>
+    <div class="overflow-x-auto w-full rounded-lg shadow">
+      <table class="min-w-full text-xs text-left border border-gray-300 bg-white rounded-lg">
+        <thead>
+          <tr class="bg-gradient-to-r from-purple-200 to-purple-100 text-purple-800">
+            <th class="px-3 py-2 border border-purple-200">N°</th>
+            <th class="px-3 py-2 border border-purple-200">Nombre</th>
+            <th class="px-3 py-2 border border-purple-200">Tipo</th>
+            <th class="px-3 py-2 border border-purple-200">Sueldo</th>
+            <th class="px-3 py-2 border border-purple-200">Fecha</th>
+            <th class="px-3 py-2 border border-purple-200">Estado</th>
+            <th class="px-3 py-2 border border-purple-200">Eliminar</th>
+          </tr>
+        </thead>
+        <tbody id="tablaPlanillaCompleta">
+          <!-- Se llena dinámicamente -->
+        </tbody>
+      </table>
+    </div>
+    <!-- Formulario para agregar hasta 30 trabajadores, debajo de la tabla -->
+    <div class="w-full max-w-2xl mx-auto mt-4 mb-2 p-4 bg-gray-50 rounded-xl border border-gray-200 shadow">
+      <h3 class="font-semibold text-blue-700 mb-2 text-center">Agregar hasta 30 trabajadores</h3>
+      <form id="formAgregarMultiples" class="mb-4">
+        <table class="min-w-full text-sm">
+          <thead>
+            <tr>
+              <th class="px-2 py-1">Nombre</th>
+              <th class="px-2 py-1">Tipo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Aquí se generan las filas con JS -->
+          </tbody>
+        </table>
+        <button type="submit" class="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Agregar todos</button>
+      </form>
+    </div>
+    <div id="contenedorPapeleraPlanilla" class="w-full max-w-2xl mx-auto mt-4 mb-2 p-4 bg-red-50 rounded-xl border border-red-200 shadow">
+      <h3 class="font-semibold text-red-700 mb-2 text-center">Papelera de trabajadores eliminados</h3>
+      <table class="min-w-full text-sm">
+        <thead>
+          <tr>
+            <th class="px-2 py-1">Nombre</th>
+            <th class="px-2 py-1">Tipo</th>
+            <th class="px-2 py-1">Sueldo</th>
+            <th class="px-2 py-1">Fecha</th>
+            <th class="px-2 py-1">Recuperar</th>
+          </tr>
+        </thead>
+        <tbody id="tablaPapeleraTrabajadores">
+          <!-- Se llena dinámicamente -->
+        </tbody>
+      </table>
+      <button id="btnVaciarPapelera" class="mt-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 w-full">Vaciar papelera</button>
+    </div>
+  </div>
+
+  <!-- Agrega este div después de #ventanaPlanilla para la ventana de inversiones -->
+  <div id="ventanaInversiones" class="hidden w-full max-w-2xl bg-white/95 rounded-2xl shadow-2xl p-8 flex flex-col items-center border border-purple-200">
+    <button onclick="volverInfoFincaDesdeInversiones()" class="self-start mb-4 text-purple-700 hover:underline flex items-center gap-2">
+      <span data-feather="arrow-left"></span> Volver
+    </button>
+    <h2 class="text-2xl font-extrabold text-purple-700 mb-6 text-center tracking-tight">Monitoreo de Inversiones</h2>
+    <div class="mb-4 w-full">
+      <input type="text" id="busquedaInversiones" class="w-full border border-purple-300 rounded px-3 py-2 focus:ring-2 focus:ring-purple-400" placeholder="Buscar por concepto...">
+    </div>
+    <div class="overflow-x-auto w-full rounded-lg shadow">
+      <table class="min-w-full text-sm text-left border border-purple-200 bg-white rounded-lg">
+        <thead>
+          <tr class="bg-gradient-to-r from-purple-200 to-purple-100 text-purple-800">
+            <th class="px-3 py-2 border border-purple-200">N°</th>
+            <th class="px-3 py-2 border border-purple-200">Monto</th>
+            <th class="px-3 py-2 border border-purple-200">En qué se invirtió</th>
+            <th class="px-3 py-2 border border-purple-200">Fecha</th>
+          </tr>
+        </thead>
+        <tbody id="tablaInversiones">
+          <!-- Se llena dinámicamente por JS -->
+        </tbody>
+      </table>
+    </div>
+    <div class="w-full mt-6 bg-purple-50 rounded-xl p-4 border border-purple-100 shadow">
+      <h3 class="font-semibold text-purple-700 mb-3">Agregar nueva inversión</h3>
+      <form id="formAgregarInversion" class="flex flex-col sm:flex-row gap-2 items-center mb-4">
+        <input type="number" id="nuevoMontoInversion" class="border rounded px-2 py-1 w-24" placeholder="Monto" min="0" required>
+        <input type="text" id="nuevoConceptoInversion" class="border rounded px-2 py-1 w-40" placeholder="En qué se invirtió" required>
+        <input type="date" id="nuevaFechaInversion" class="border rounded px-2 py-1 w-32" required>
+        <input type="time" id="nuevaHoraInversion" class="border rounded px-2 py-1 w-24" required>
+        <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Agregar inversión</button>
+      </form>
+      <div id="mensajeAgregarInversion" class="text-xs text-red-600 mt-1 text-center"></div>
+    </div>
+    <!-- Nueva sección para la papelera de inversiones eliminadas -->
+    <div class="w-full mt-6 bg-red-50 rounded-xl p-4 border border-red-100 shadow">
+      <h3 class="font-semibold text-red-700 mb-3">Papelera de inversiones eliminadas</h3>
+      <table class="min-w-full text-sm text-left border border-red-200 bg-white rounded-lg">
+        <thead>
+          <tr class="bg-red-100 text-red-800">
+            <th class="px-3 py-2 border border-red-200">Monto</th>
+            <th class="px-3 py-2 border border-red-200">En qué se invirtió</th>
+            <th class="px-3 py-2 border border-red-200">Fecha</th>
+            <th class="px-3 py-2 border border-red-200">Recuperar</th>
+          </tr>
+        </thead>
+        <tbody id="tablaPapeleraInversiones">
+          <!-- Se llena dinámicamente por JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Agrega este modal para mostrar el gráfico de resumen -->
+  <div id="modalResumen" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative">
+      <button onclick="cerrarModalResumen()" class="absolute top-2 right-2 text-gray-500 hover:text-red-600 text-xl font-bold">&times;</button>
+      <h2 class="text-xl font-bold text-blue-700 mb-4 text-center">Resumen General</h2>
+      <canvas id="graficoResumen" height="220"></canvas>
+      <div class="mt-4 text-sm text-gray-700">
+        <div><b>Ingresos totales:</b> $<span id="resumenIngresos"></span></div>
+        <div><b>Egresos totales:</b> $<span id="resumenEgresos"></span></div>
+        <div><b>Inversiones rápidas:</b> $<span id="resumenInversionesRapidas"></span></div>
+        <div><b>Inversiones monitoreadas:</b> $<span id="resumenInversionesDetalladas"></span></div>
+        <div><b>Total trabajadores registrados:</b> <span id="resumenTrabajadores"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para elegir tipo de archivo -->
+  <div id="modalTipoArchivo" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-xs w-full relative">
+      <button onclick="cerrarModalTipoArchivo()" class="absolute top-2 right-2 text-gray-500 hover:text-red-600 text-xl font-bold">&times;</button>
+      <h2 class="text-lg font-bold text-blue-700 mb-4 text-center">¿Qué tipo de archivo subiste?</h2>
+      <div class="flex flex-col gap-3">
+        <button onclick="procesarComoImagen()" class="bg-green-600 text-white py-2 rounded hover:bg-green-700">Imagen (foto de recibo/boucher)</button>
+        <button onclick="procesarComoDocumento()" class="bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Documento (PDF, CSV, JSON)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para mostrar desglose y gráfica -->
+  <div id="modalReciboGrafica" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative">
+      <button onclick="cerrarModalReciboGrafica()" class="absolute top-2 right-2 text-gray-500 hover:text-red-600 text-xl font-bold">&times;</button>
+      <h2 class="text-xl font-bold text-green-700 mb-4 text-center">Desglose del Recibo/Documento</h2>
+      <div id="desgloseRecibo" class="mb-4 text-gray-700"></div>
+      <canvas id="graficoRecibo" height="180"></canvas>
+      <div id="tablaRecibo" class="mt-4"></div>
+    </div>
+  </div>
+
+  <!-- Agrega este modal para elegir el tipo de gráfico después de procesar el archivo -->
+  <div id="modalElegirGrafico" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-xs w-full relative">
+      <button onclick="cerrarModalElegirGrafico()" class="absolute top-2 right-2 text-gray-500 hover:text-red-600 text-xl font-bold">&times;</button>
+      <h2 class="text-lg font-bold text-blue-700 mb-4 text-center">Elige el tipo de gráfico</h2>
+      <div class="flex flex-col gap-3">
+        <button onclick="mostrarGraficoReciboTipo('bar')" class="bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Gráfico de Barras</button>
+        <button onclick="mostrarGraficoReciboTipo('pie')" class="bg-green-600 text-white py-2 rounded hover:bg-green-700">Gráfico de Pastel</button>
+        <button onclick="mostrarGraficoReciboTipo('bubble')" class="bg-purple-600 text-white py-2 rounded hover:bg-purple-700">Gráfico de Burbuja</button>
+        <button onclick="mostrarGraficoReciboTipo('histogram')" class="bg-yellow-600 text-white py-2 rounded hover:bg-yellow-700">Histograma</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Perfil de Usuario -->
+  <div id="modalPerfil" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative">
+      <button onclick="cerrarModalPerfil()" class="absolute top-2 right-2 text-gray-500 hover:text-red-600 text-xl font-bold">&times;</button>
+      <h2 class="text-xl font-bold text-blue-700 mb-4 text-center">Mi Perfil</h2>
+      <form id="formPerfil" class="flex flex-col gap-3 items-center">
+        <label class="cursor-pointer relative">
+          <img id="fotoPerfilPreview" src="https://ui-avatars.com/api/?name=Usuario" alt="Foto de perfil" class="w-24 h-24 rounded-full border-4 border-blue-200 shadow mb-2 object-cover" />
+          <input type="file" id="fotoPerfil" accept="image/*" class="hidden" onchange="cambiarFotoPerfil(event)">
+          <span class="absolute bottom-2 right-2 bg-blue-600 text-white rounded-full p-1 text-xs shadow">Editar</span>
+        </label>
+        <input type="text" id="nombrePerfil" class="w-full border rounded px-3 py-2" placeholder="Nombre completo" required>
+        <input type="email" id="correoPerfil" class="w-full border rounded px-3 py-2" placeholder="Correo electrónico" required>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Guardar Cambios</button>
+      </form>
+      <div id="mensajePerfil" class="text-xs text-red-600 mt-2 text-center"></div>
+    </div>
+  </div>
+
+  <!-- Botón flotante para abrir el perfil -->
+  <button onclick="abrirModalPerfil()" title="Mi perfil"
+    class="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-full shadow-lg p-4 hover:scale-110 transition">
+    <span data-feather="user"></span>
+  </button>
+
+  <!-- Botón flotante para compartir (elige método y luego contacto) -->
+  <button onclick="mostrarSelectorMetodoCompartir()" title="Compartir información"
+    class="fixed bottom-6 right-24 z-50 bg-gradient-to-r from-green-500 to-blue-400 text-white rounded-full shadow-lg p-4 hover:scale-110 transition">
+    <span data-feather="share-2"></span>
+  </button>
+
+  <!-- Selector de modo de color -->
+  <div class="fixed top-6 right-6 z-50 flex gap-2 items-center bg-white/80 rounded-xl px-3 py-2 shadow border border-gray-200">
+    <span class="font-semibold text-gray-700 text-xs">Modo:</span>
+    <button onclick="setModoColor('claro')" class="px-2 py-1 rounded bg-gray-100 hover:bg-gray-300 text-gray-800 text-xs">Claro</button>
+    <button onclick="setModoColor('azul')" class="px-2 py-1 rounded bg-blue-100 hover:bg-blue-300 text-blue-800 text-xs">Azul</button>
+    <button onclick="setModoColor('oscuro')" class="px-2 py-1 rounded bg-gray-800 hover:bg-gray-700 text-white text-xs">Oscuro</button>
+  </div>
+
+  <!-- Elementos flotantes finca -->
+  <div class="finca-float hoja">
+    <svg viewBox="0 0 80 80"><ellipse cx="40" cy="40" rx="38" ry="18" fill="#34d399"/><path d="M40 40 Q60 10 78 40 Q60 70 40 40" fill="#059669" opacity="0.5"/></svg>
+  </div>
+  <div class="finca-float sol">
+    <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" fill="#fde68a"/><circle cx="60" cy="60" r="35" fill="#fbbf24" opacity="0.7"/></svg>
+  </div>
+  <div class="finca-float nube">
+    <svg viewBox="0 0 140 60"><ellipse cx="50" cy="40" rx="40" ry="18" fill="#fff"/><ellipse cx="90" cy="30" rx="30" ry="15" fill="#e0f2fe"/></svg>
+  </div>
+  <div class="finca-float montana">
+    <svg viewBox="0 0 200 80"><polygon points="0,80 50,20 100,80" fill="#a7f3d0"/><polygon points="80,80 140,30 200,80" fill="#6ee7b7"/></svg>
+  </div>
+
+  <script>
+    feather.replace();
+
+    // --- LOGIN Y CONTRASEÑA ---
+    const loginDiv = document.getElementById('login');
+    const portadaDiv = document.getElementById('portada');
+    const registroDiv = document.getElementById('registroFinca');
+    const infoDiv = document.getElementById('infoFinca');
+    const formLogin = document.getElementById('formLogin');
+    const loginMensaje = document.getElementById('loginMensaje');
+    const labelPass = document.getElementById('labelPass');
+
+    // Verifica si ya hay contraseña guardada
+    if (localStorage.getItem('finca_pass')) {
+      labelPass.textContent = "Ingresa tu contraseña";
+    } else {
+      labelPass.textContent = "Crea tu contraseña";
+    }
+
+    // Login
+    formLogin.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const pass = document.getElementById('password').value;
+      if (pass === "1020") {
+        mostrarApp();
+      } else {
+        loginMensaje.textContent = "Contraseña incorrecta.";
+      }
+    });
+
+    function mostrarApp() {
+      loginDiv.classList.add('hidden');
+      portadaDiv.classList.remove('hidden');
+      registroDiv.classList.add('hidden');
+      infoDiv.classList.add('hidden');
+      cargarDatosFinca();
+    }
+
+    // --- GUARDAR Y CARGAR DATOS DE LA FINCA ---
+    function guardarDatosFinca(nombre, coordenadas) {
+      localStorage.setItem('finca_nombre', nombre);
+      localStorage.setItem('finca_coordenadas', coordenadas);
+    }
+    function cargarDatosFinca() {
+      const nombre = localStorage.getItem('finca_nombre');
+      const coordenadas = localStorage.getItem('finca_coordenadas');
+      if (nombre && coordenadas) {
+        document.getElementById('infoNombre').textContent = nombre;
+        document.getElementById('infoCoordenadas').textContent = coordenadas;
+        // Si quieres mostrar infoFinca directamente al iniciar sesión si ya hay datos, descomenta:
+        // portadaDiv.classList.add('hidden');
+        // infoDiv.classList.remove('hidden');
+      }
+    }
+
+    // Portada y registro
+    function mostrarRegistro() {
+      document.getElementById('portada').classList.add('hidden');
+      document.getElementById('registroFinca').classList.remove('hidden');
+      document.getElementById('infoFinca').classList.add('hidden');
+    }
+    function volverPortada() {
+      document.getElementById('registroFinca').classList.add('hidden');
+      document.getElementById('portada').classList.remove('hidden');
+      document.getElementById('infoFinca').classList.add('hidden');
+    }
+    function volverPortadaDesdeInfo() {
+      document.getElementById('infoFinca').classList.add('hidden');
+      document.getElementById('portada').classList.remove('hidden');
+      document.getElementById('registroFinca').classList.add('hidden');
+    }
+
+    // Tomar foto con la cámara
+    function tomarFoto() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.capture = 'environment';
+      input.onchange = () => {
+        const archivo = input.files[0];
+        if (archivo) {
+          const url = URL.createObjectURL(archivo);
+          const preview = document.getElementById('previewFoto');
+          preview.src = url;
+          preview.classList.remove('hidden');
+        }
+      };
+      input.click();
+    }
+
+    // Notificaciones
+    async function mostrarNotificacion() {
+      if ('Notification' in window) {
+        const permiso = await Notification.requestPermission();
+        if (permiso === 'granted') {
+          new Notification('¡Bienvenido a Registro de Fincas!');
+        } else {
+          alert('Permiso de notificación denegado.');
+        }
+      } else {
+        alert('Las notificaciones no son compatibles con este navegador.');
+      }
+    }
+
+    // Geolocalización
+    function getLocation() {
+      if (!navigator.geolocation) {
+        alert("Tu navegador no soporta geolocalización.");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          document.getElementById('coordenadas').value = `${latitude}, ${longitude}`;
+        },
+        (error) => {
+          alert("No se pudo obtener la ubicación: " + error.message);
+        }
+      );
+    }
+
+    // Guardar finca y mostrar info
+    document.getElementById('formFinca').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const nombre = document.getElementById('nombre').value.trim();
+      const coordenadas = document.getElementById('coordenadas').value.trim();
+      const mensaje = document.getElementById('mensaje');
+      if (!nombre || !coordenadas) {
+        mensaje.textContent = "Por favor, completa todos los campos.";
+        mensaje.className = "mt-4 text-center text-red-600 font-semibold";
+        mensaje.classList.remove('hidden');
+        return;
+      }
+      // Guardar datos en localStorage
+      guardarDatosFinca(nombre, coordenadas);
+      // Mostrar ventana de información de la finca
+      registroDiv.classList.add('hidden');
+      infoDiv.classList.remove('hidden');
+      document.getElementById('infoNombre').textContent = nombre;
+      document.getElementById('infoCoordenadas').textContent = coordenadas;
+      // Limpiar formulario
+      e.target.reset();
+      document.getElementById('coordenadas').value = "";
+      mensaje.classList.add('hidden');
+    });
+
+    // --- Mostrar solo login al inicio ---
+    portadaDiv.classList.add('hidden');
+    registroDiv.classList.add('hidden');
+    infoDiv.classList.add('hidden');
+    loginDiv.classList.remove('hidden');
+
+    // --- Variables para control ---
+    let ingresos = JSON.parse(localStorage.getItem('finca_ingresos') || '[]');
+    let egresos = JSON.parse(localStorage.getItem('finca_egresos') || '[]');
+    let inversiones = JSON.parse(localStorage.getItem('finca_inversiones') || '[]');
+    let planilla = JSON.parse(localStorage.getItem('finca_planilla') || '[]');
+
+    // --- Actualizar listas y totales ---
+    function actualizarListas() {
+      // Ingresos
+      const listaIngresos = document.getElementById('listaIngresos');
+      listaIngresos.innerHTML = ingresos.map((ing, i) =>
+        `<li>Ingreso ${i+1}: $${ing.monto} <span class="text-gray-500">(${ing.origen})</span></li>`
+      ).join('');
+      document.getElementById('totalIngresos').textContent = ingresos.reduce((a, b) => a + (b.monto || 0), 0);
+
+      // Egresos
+      const listaEgresos = document.getElementById('listaEgresos');
+      listaEgresos.innerHTML = egresos.map((m, i) => `<li>Egreso ${i+1}: $${m}</li>`).join('');
+      document.getElementById('totalEgresos').textContent = egresos.reduce((a, b) => a + b, 0);
+
+      // Inversiones rápidas
+      const listaInversiones = document.getElementById('listaInversiones');
+      listaInversiones.innerHTML = inversiones.map((m, i) => `<li>Inversión ${i+1}: $${m}</li>`).join('');
+      const totalInversionesRapidas = inversiones.reduce((a, b) => a + b, 0);
+
+      // Inversiones detalladas (de la ventana de monitoreo)
+      let inversionesDetalladas = [];
+      try {
+        inversionesDetalladas = JSON.parse(localStorage.getItem('finca_inversiones_detalladas') || '[]');
+      } catch (e) { inversionesDetalladas = []; }
+      const totalInversionesDetalladas = inversionesDetalladas.reduce((a, b) => a + (b.monto || 0), 0);
+
+      // Mostrar desglose y total
+      document.getElementById('totalInversionesRapidas').textContent = totalInversionesRapidas;
+      document.getElementById('totalInversionesDetalladas').textContent = totalInversionesDetalladas;
+      document.getElementById('totalInversiones').textContent = totalInversionesRapidas + totalInversionesDetalladas;
+
+      // Planilla con filtro
+      const tablaPlanilla = document.getElementById('tablaPlanilla');
+      const filtro = document.getElementById('busquedaPlanilla').value.trim().toLowerCase();
+      const planillaOrdenada = [...planilla]
+        .sort((a, b) => a.nombre.localeCompare(b.nombre))
+        .filter(emp => emp.nombre.toLowerCase().includes(filtro));
+      tablaPlanilla.innerHTML = planillaOrdenada.map((emp, i) =>
+        `<tr>
+          <td class="border px-2 py-1">${i + 1}</td>
+          <td class="border px-2 py-1">${emp.nombre}</td>
+          <td class="border px-2 py-1">${emp.tipo}</td>
+          <td class="border px-2 py-1">$${emp.sueldo}</td>
+          <td class="border px-2 py-1 text-xs text-gray-500">${emp.fecha || ''}</td>
+          <td class="border px-2 py-1 flex gap-1 items-center">
+            <select onchange="cambiarEstadoPlanilla('${emp.nombre.replace(/'/g,"\\'")}', '${emp.fecha}', this.value)" class="border rounded px-1 py-0.5 text-xs">
+              <option value="Sin pagar"${emp.estado === 'Sin pagar' || !emp.estado ? ' selected' : ''}>Sin pagar</option>
+              <option value="Pagado"${emp.estado === 'Pagado' ? ' selected' : ''}>Pagado</option>
+            </select>
+            <button onclick="eliminarTrabajador('${emp.nombre.replace(/'/g,"\\'")}', '${emp.fecha}')" class="ml-2 text-red-600 hover:text-red-800" title="Eliminar">&#10006;</button>
+          </td>
+        </tr>`
+      ).join('');
+
+      // Balance semanal (incluye inversiones rápidas y detalladas)
+      const balance = ingresos.reduce((a, b) => a + b, 0)
+        - egresos.reduce((a, b) => a + b, 0)
+        - totalInversionesRapidas
+        - totalInversionesDetalladas;
+      document.getElementById('balanceSemanal').textContent = balance;
+    }
+
+    // --- Formularios ---
+    document.getElementById('formIngreso').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const monto = parseFloat(document.getElementById('montoIngreso').value);
+      let origen = document.getElementById('origenIngreso').value.trim();
+      if (!isNaN(monto) && monto > 0) {
+        if (!origen) origen = "Sin especificar";
+        ingresos.push({ monto, origen });
+        localStorage.setItem('finca_ingresos', JSON.stringify(ingresos));
+        document.getElementById('montoIngreso').value = '';
+        document.getElementById('origenIngreso').value = '';
+        actualizarListas();
+        enviarNotificacionCambio('Nuevo ingreso agregado.');
+      }
+    });
+
+    document.getElementById('formEgreso').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const monto = parseFloat(document.getElementById('montoEgreso').value);
+      if (!isNaN(monto) && monto > 0) {
+        egresos.push(monto);
+        document.getElementById('montoEgreso').value = '';
+        actualizarListas();
+        enviarNotificacionCambio('Nuevo egreso agregado.');
+      }
+    });
+
+    document.getElementById('formInversion').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const monto = parseFloat(document.getElementById('montoInversion').value);
+      if (!isNaN(monto) && monto > 0) {
+        inversiones.push(monto);
+        document.getElementById('montoInversion').value = '';
+        actualizarListas();
+        enviarNotificacionCambio('Nueva inversión rápida agregada.');
+      }
+    });
+
+    document.getElementById('formAgregarInversion').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const monto = parseFloat(document.getElementById('nuevoMontoInversion').value);
+      const concepto = document.getElementById('nuevoConceptoInversion').value.trim();
+      if (!concepto || isNaN(monto) || monto <= 0) return;
+      const fecha = new Date();
+      const fechaStr = fecha.toLocaleDateString() + ' ' + fecha.toLocaleTimeString();
+      inversionesDetalladas.push({ monto, concepto, fecha: fechaStr });
+      localStorage.setItem('finca_inversiones_detalladas', JSON.stringify(inversionesDetalladas));
+      document.getElementById('nuevoMontoInversion').value = '';
+      document.getElementById('nuevoConceptoInversion').value = '';
+      actualizarTablaInversiones();
+      setTimeout(() => {
+        enviarNotificacionCambio('Nueva inversión monitoreada agregada.');
+      }, 500);
+    });
+
+    // AGREGAR TRABAJADOR A PLANILLA
+    document.getElementById('formPlanilla').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const nombre = document.getElementById('nombreEmpleado').value.trim();
+      const sueldo = parseFloat(document.getElementById('sueldoEmpleado').value);
+      const tipo = document.getElementById('tipoEmpleado').value;
+      const fecha = new Date().toLocaleString();
+      if (!nombre || isNaN(sueldo) || !tipo) return;
+      planilla.push({ nombre, sueldo, tipo, fecha, estado: 'Sin pagar' });
+      localStorage.setItem('finca_planilla', JSON.stringify(planilla));
+      document.getElementById('nombreEmpleado').value = '';
+      document.getElementById('sueldoEmpleado').value = '';
+      document.getElementById('tipoEmpleado').value = '';
+      actualizarListas();
+    });
+
+    // Agrega esta función para enviar notificaciones personalizadas
+    async function enviarNotificacionCambio(mensaje) {
+      if ('Notification' in window) {
+        let permiso = Notification.permission;
+        if (permiso !== 'granted') {
+          permiso = await Notification.requestPermission();
+        }
+        if (permiso === 'granted') {
+          new Notification(mensaje || '¡Se ha realizado un cambio en la finca!');
+        }
+      }
+    }
+
+    // Mostrar el modal y el gráfico al pulsar "Notificar"
+    function mostrarNotificacion() {
+      // Calcula los datos
+      const ingresosTotales = ingresos.reduce((a, b) => a + b, 0);
+      const egresosTotales = egresos.reduce((a, b) => a + b, 0);
+      const inversionesRapidas = inversiones.reduce((a, b) => a + b, 0);
+      let inversionesDetalladasArr = [];
+      try {
+        inversionesDetalladasArr = JSON.parse(localStorage.getItem('finca_inversiones_detalladas') || '[]');
+      } catch (e) { inversionesDetalladasArr = []; }
+      const inversionesDetalladasTotal = inversionesDetalladasArr.reduce((a, b) => a + (b.monto || 0), 0);
+      const totalTrabajadores = planilla.length;
+
+      // Muestra los datos en el modal
+      document.getElementById('resumenIngresos').textContent = ingresosTotales;
+      document.getElementById('resumenEgresos').textContent = egresosTotales;
+      document.getElementById('resumenInversionesRapidas').textContent = inversionesRapidas;
+      document.getElementById('resumenInversionesDetalladas').textContent = inversionesDetalladasTotal;
+      document.getElementById('resumenTrabajadores').textContent = totalTrabajadores;
+
+      // Muestra el modal
+      document.getElementById('modalResumen').classList.remove('hidden');
+
+      // Dibuja el gráfico de barras
+      setTimeout(() => {
+        const ctx = document.getElementById('graficoResumen').getContext('2d');
+        if (window.graficoResumenChart) window.graficoResumenChart.destroy();
+        window.graficoResumenChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['Ingresos', 'Egresos', 'Inv. rápidas', 'Inv. monitoreadas', 'Trabajadores'],
+            datasets: [{
+              label: 'Totales',
+              data: [
+                ingresosTotales,
+                egresosTotales,
+                inversionesRapidas,
+                inversionesDetalladasTotal,
+                totalTrabajadores
+              ],
+              backgroundColor: [
+                '#38bdf8', // azul
+                '#f87171', // rojo
+                '#a78bfa', // morado claro
+                '#7c3aed', // morado oscuro
+                '#34d399'  // verde
+              ],
+              borderRadius: 8
+            }]
+          },
+          options: {
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              y: { beginAtZero: true }
+            }
+          }
+        });
+      }, 100);
+    }
+
+    // Cerrar el modal
+    function cerrarModalResumen() {
+      document.getElementById('modalResumen').classList.add('hidden');
+    }
+
+    let archivoReciboTemporal = null;
+
+    // Al subir archivo, pregunta tipo
+    function procesarArchivoRecibo(event) {
+      archivoReciboTemporal = event.target.files[0];
+      if (!archivoReciboTemporal) return;
+      document.getElementById('modalTipoArchivo').classList.remove('hidden');
+    }
+
+    // Cerrar modal de tipo
+    function cerrarModalTipoArchivo() {
+      document.getElementById('modalTipoArchivo').classList.add('hidden');
+      archivoReciboTemporal = null;
+    }
+
+    // Procesar como imagen (simulación de OCR)
+    function procesarComoImagen() {
+      cerrarModalTipoArchivo();
+      if (!archivoReciboTemporal) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const url = e.target.result;
+        let html = `<img src="${url}" alt="Recibo" class="w-40 mx-auto mb-2 rounded shadow"/>`;
+        html += `
+          <div class="mb-2">
+            <label class="block mb-1 font-semibold">¿Es ingreso o egreso?</label>
+            <select id="tipoReciboManual" class="border rounded px-2 py-1 w-full">
+              <option value="ingreso">Ingreso</option>
+              <option value="egreso">Egreso</option>
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="block mb-1 font-semibold">Monto</label>
+            <input type="number" id="montoReciboManual" class="border rounded px-2 py-1 w-full" placeholder="Ej: 1500" min="0">
+          </div>
+          <button onclick="guardarReciboManual()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full mt-2">Guardar y elegir gráfico</button>
+        `;
+        document.getElementById('desgloseRecibo').innerHTML = html;
+        document.getElementById('tablaRecibo').innerHTML = '';
+        document.getElementById('modalReciboGrafica').classList.remove('hidden');
+      };
+      reader.readAsDataURL(archivoReciboTemporal);
+    }
+
+    // Guardar recibo manual y mostrar gráfica
+    function guardarReciboManual() {
+      const tipo = document.getElementById('tipoReciboManual').value;
+      const monto = parseFloat(document.getElementById('montoReciboManual').value);
+      if (isNaN(monto) || monto <= 0) {
+        alert('Ingresa un monto válido.');
+        return;
+      }
+      if (tipo === 'ingreso') {
+        ingresos.push(monto);
+        localStorage.setItem('finca_ingresos', JSON.stringify(ingresos));
+      } else {
+        egresos.push(monto);
+        localStorage.setItem('finca_egresos', JSON.stringify(egresos));
+      }
+      actualizarListas();
+      // Guarda los datos para graficar
+      datosGraficoRecibo = [{ tipo, valor: monto }];
+      document.getElementById('modalReciboGrafica').classList.add('hidden');
+      document.getElementById('modalElegirGrafico').classList.remove('hidden');
+    }
+
+    // Procesar como documento (PDF, CSV, JSON)
+    function procesarComoDocumento() {
+      cerrarModalTipoArchivo();
+      if (!archivoReciboTemporal) return;
+      const archivo = archivoReciboTemporal;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        let datos = [];
+        if (archivo.name.endsWith('.csv')) {
+          // Procesar CSV: espera columnas "tipo" y "valor"
+          const filas = e.target.result.split('\n').filter(f => f.trim());
+          const encabezados = filas[0].split(',').map(h => h.trim().toLowerCase());
+          const tipoIdx = encabezados.indexOf('tipo');
+          const valorIdx = encabezados.indexOf('valor');
+          if (tipoIdx === -1 || valorIdx === -1) {
+            alert('El archivo CSV debe tener columnas "tipo" y "valor".');
+            return;
+          }
+          for (let i = 1; i < filas.length; i++) {
+            const cols = filas[i].split(',');
+            datos.push({ tipo: cols[tipoIdx].trim(), valor: parseFloat(cols[valorIdx]) });
+          }
+        } else if (archivo.name.endsWith('.json')) {
+          // Procesar JSON: espera array de objetos { tipo, valor }
+          try {
+            datos = JSON.parse(e.target.result);
+          } catch {
+            alert('El archivo JSON no es válido.');
+            return;
+          }
+        } else if (archivo.name.endsWith('.pdf')) {
+          alert('Lectura de PDF no soportada en esta demo. Usa CSV o JSON.');
+          return;
+        } else {
+          alert('Tipo de archivo no soportado.');
+          return;
+        }
+
+        // Agrupar por tipo
+        const resumen = {};
+        datos.forEach(d => {
+          if (!d.tipo || isNaN(d.valor)) return;
+          resumen[d.tipo] = (resumen[d.tipo] || 0) + d.valor;
+        });
+
+        // Mostrar desglose y gráfica
+        let html = '<ul class="mb-4">';
+        for (const tipo in resumen) {
+          html += `<li><b>${tipo}:</b> $${resumen[tipo]}</li>`;
+        }
+        html += '</ul>';
+        document.getElementById('desgloseRecibo').innerHTML = html;
+
+        // Mostrar tabla de datos
+        let tabla = `<table class="min-w-full text-xs border border-gray-300 bg-white rounded"><thead><tr class="bg-gray-200"><th class="px-2 py-1 border">Tipo</th><th class="px-2 py-1 border">Valor</th></tr></thead><tbody>`;
+        datos.forEach(d => {
+          if (!d.tipo || isNaN(d.valor)) return;
+          tabla += `<tr><td class="border px-2 py-1">${d.tipo}</td><td class="border px-2 py-1">$${d.valor}</td></tr>`;
+        });
+        tabla += '</tbody></table>';
+        document.getElementById('tablaRecibo').innerHTML = tabla;
+
+        document.getElementById('modalReciboGrafica').classList.remove('hidden');
+        mostrarGraficaReciboDocumento(resumen);
+      };
+
+      if (archivo.name.endsWith('.csv') || archivo.name.endsWith('.json')) {
+        reader.readAsText(archivo);
+      }
+    }
+
+    // Mostrar gráfica de barra para recibo manual
+    function mostrarGraficaRecibo(tipo, monto) {
+      setTimeout(() => {
+        const ctx = document.getElementById('graficoRecibo').getContext('2d');
+        if (window.graficoReciboChart) window.graficoReciboChart.destroy();
+        window.graficoReciboChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: [tipo.charAt(0).toUpperCase() + tipo.slice(1)],
+            datasets: [{
+              label: 'Monto',
+              data: [monto],
+              backgroundColor: tipo === 'ingreso' ? '#38bdf8' : '#f87171'
+            }]
+          },
+          options: {
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+          }
+        });
+      }, 100);
+    }
+
+    // Mostrar gráfica de barra para documento
+    function mostrarGraficaReciboDocumento(resumen) {
+      setTimeout(() => {
+        const ctx = document.getElementById('graficoRecibo').getContext('2d');
+        if (window.graficoReciboChart) window.graficoReciboChart.destroy();
+        window.graficoReciboChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: Object.keys(resumen),
+            datasets: [{
+              label: 'Monto',
+              data: Object.values(resumen),
+              backgroundColor: Object.keys(resumen).map(tipo => tipo.toLowerCase().includes('ingreso') ? '#38bdf8' : '#f87171')
+            }]
+          },
+          options: {
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+          }
+        });
+      }, 100);
+    }
+
+    // Cerrar modal de desglose
+    function cerrarModalReciboGrafica() {
+      document.getElementById('modalReciboGrafica').classList.add('hidden');
+      document.getElementById('desgloseRecibo').innerHTML = '';
+      document.getElementById('tablaRecibo').innerHTML = '';
+      if (window.graficoReciboChart) window.graficoReciboChart.destroy();
+    }
+
+    let datosGraficoRecibo = null; // Guarda los datos para graficar
+
+    // Modifica procesarComoImagen y procesarComoDocumento para guardar los datos y mostrar el modal de elección de gráfico
+
+    function procesarComoImagen() {
+      cerrarModalTipoArchivo();
+      if (!archivoReciboTemporal) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const url = e.target.result;
+        let html = `<img src="${url}" alt="Recibo" class="w-40 mx-auto mb-2 rounded shadow"/>`;
+        html += `
+          <div class="mb-2">
+            <label class="block mb-1 font-semibold">¿Es ingreso o egreso?</label>
+            <select id="tipoReciboManual" class="border rounded px-2 py-1 w-full">
+              <option value="ingreso">Ingreso</option>
+              <option value="egreso">Egreso</option>
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="block mb-1 font-semibold">Monto</label>
+            <input type="number" id="montoReciboManual" class="border rounded px-2 py-1 w-full" placeholder="Ej: 1500" min="0">
+          </div>
+          <button onclick="guardarReciboManual()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full mt-2">Guardar y elegir gráfico</button>
+        `;
+        document.getElementById('desgloseRecibo').innerHTML = html;
+        document.getElementById('tablaRecibo').innerHTML = '';
+        document.getElementById('modalReciboGrafica').classList.remove('hidden');
+      };
+      reader.readAsDataURL(archivoReciboTemporal);
+    }
+
+    function guardarReciboManual() {
+      const tipo = document.getElementById('tipoReciboManual').value;
+      const monto = parseFloat(document.getElementById('montoReciboManual').value);
+      if (isNaN(monto) || monto <= 0) {
+        alert('Ingresa un monto válido.');
+        return;
+      }
+      if (tipo === 'ingreso') {
+        ingresos.push(monto);
+        localStorage.setItem('finca_ingresos', JSON.stringify(ingresos));
+      } else {
+        egresos.push(monto);
+        localStorage.setItem('finca_egresos', JSON.stringify(egresos));
+      }
+      actualizarListas();
+      // Guarda los datos para graficar
+      datosGraficoRecibo = [{ tipo, valor: monto }];
+      document.getElementById('modalReciboGrafica').classList.add('hidden');
+      document.getElementById('modalElegirGrafico').classList.remove('hidden');
+    }
+
+    function procesarComoDocumento() {
+      cerrarModalTipoArchivo();
+      if (!archivoReciboTemporal) return;
+      const archivo = archivoReciboTemporal;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        let datos = [];
+        if (archivo.name.endsWith('.csv')) {
+          // Procesar CSV: espera columnas "tipo" y "valor"
+          const filas = e.target.result.split('\n').filter(f => f.trim());
+          const encabezados = filas[0].split(',').map(h => h.trim().toLowerCase());
+          const tipoIdx = encabezados.indexOf('tipo');
+          const valorIdx = encabezados.indexOf('valor');
+          if (tipoIdx === -1 || valorIdx === -1) {
+            alert('El archivo CSV debe tener columnas "tipo" y "valor".');
+            return;
+          }
+          for (let i = 1; i < filas.length; i++) {
+            const cols = filas[i].split(',');
+            datos.push({ tipo: cols[tipoIdx].trim(), valor: parseFloat(cols[valorIdx]) });
+          }
+        } else if (archivo.name.endsWith('.json')) {
+          // Procesar JSON: espera array de objetos { tipo, valor }
+          try {
+            datos = JSON.parse(e.target.result);
+          } catch {
+            alert('El archivo JSON no es válido.');
+            return;
+          }
+        } else if (archivo.name.endsWith('.pdf')) {
+          alert('Lectura de PDF no soportada en esta demo. Usa CSV o JSON.');
+          return;
+        } else {
+          alert('Tipo de archivo no soportado.');
+          return;
+        }
+        // Guarda los datos para graficar
+        datosGraficoRecibo = datos;
+        document.getElementById('modalElegirGrafico').classList.remove('hidden');
+      };
+      if (archivo.name.endsWith('.csv') || archivo.name.endsWith('.json')) {
+        reader.readAsText(archivo);
+      }
+    }
+
+    // Cerrar modal de elección de gráfico
+    function cerrarModalElegirGrafico() {
+      document.getElementById('modalElegirGrafico').classList.add('hidden');
+    }
+
+    // Mostrar el gráfico según el tipo elegido
+    function mostrarGraficoReciboTipo(tipoGrafico) {
+      cerrarModalElegirGrafico();
+      // Prepara los datos
+      const resumen = {};
+      datosGraficoRecibo.forEach(d => {
+        if (!d.tipo || isNaN(d.valor)) return;
+        resumen[d.tipo] = (resumen[d.tipo] || 0) + d.valor;
+      });
+
+      // Prepara tabla
+      let tabla = `<table class="min-w-full text-xs border border-gray-300 bg-white rounded"><thead><tr class="bg-gray-200"><th class="px-2 py-1 border">Tipo</th><th class="px-2 py-1 border">Valor</th></tr></thead><tbody>`;
+      datosGraficoRecibo.forEach(d => {
+        if (!d.tipo || isNaN(d.valor)) return;
+        tabla += `<tr><td class="border px-2 py-1">${d.tipo}</td><td class="border px-2 py-1">$${d.valor}</td></tr>`;
+      });
+      tabla += '</tbody></table>';
+      document.getElementById('tablaRecibo').innerHTML = tabla;
+
+      // Muestra el modal de desglose y gráfica
+      document.getElementById('modalReciboGrafica').classList.remove('hidden');
+
+      // Dibuja el gráfico según el tipo seleccionado
+      setTimeout(() => {
+        const ctx = document.getElementById('graficoRecibo').getContext('2d');
+        if (window.graficoReciboChart) window.graficoReciboChart.destroy();
+
+        // Datos para el gráfico
+        const labels = Object.keys(resumen);
+        const data = Object.values(resumen);
+
+        let chartType = tipoGrafico;
+        let chartData = {};
+        let chartOptions = {
+          plugins: { legend: { display: tipoGrafico !== 'bar' } },
+          scales: { y: { beginAtZero: true } }
+        };
+
+        if (tipoGrafico === 'histogram') {
+          // Simula histograma agrupando valores
+          let bins = {};
+          data.forEach(v => {
+            const bin = Math.floor(v / 100) * 100;
+            bins[bin] = (bins[bin] || 0) + 1;
+          });
+          chartType = 'bar';
+          chartData = {
+            labels: Object.keys(bins).map(b => `$${b} - $${parseInt(b) + 99}`),
+            datasets: [{
+              label: 'Frecuencia',
+              data: Object.values(bins),
+              backgroundColor: '#fbbf24'
+            }]
+          };
+          chartOptions.plugins.legend.display = false;
+        } else if (tipoGrafico === 'bubble') {
+          chartType = 'bubble';
+          chartData = {
+            datasets: labels.map((l, i) => ({
+              label: l,
+              data: [{ x: i + 1, y: data[i], r: Math.sqrt(data[i]) * 2 + 10 }],
+              backgroundColor: ['#38bdf8', '#f87171', '#a78bfa', '#7c3aed', '#34d399', '#fbbf24', '#f472b6', '#818cf8'][i % 8]
+            }))
+          };
+          chartOptions.scales = { x: { beginAtZero: true }, y: { beginAtZero: true } };
+        } else {
+          chartData = {
+            labels,
+            datasets: [{
+              label: 'Monto',
+              data,
+              backgroundColor: tipoGrafico === 'pie'
+                ? ['#38bdf8', '#f87171', '#a78bfa', '#7c3aed', '#34d399', '#fbbf24', '#f472b6', '#818cf8']
+                : labels.map(tipo => tipo.toLowerCase().includes('ingreso') ? '#38bdf8' : '#f87171')
+            }]
+          };
+        }
+
+        window.graficoReciboChart = new Chart(ctx, {
+          type: chartType,
+          data: chartData,
+          options: chartOptions
+        });
+      }, 100);
+    }
+
+    // Mostrar ventana de planilla completa
+    function mostrarVentanaPlanilla() {
+      document.getElementById('infoFinca').classList.add('hidden');
+      document.getElementById('ventanaPlanilla').classList.remove('hidden');
+      renderizarPlanillaCompleta();
+      renderizarTablaAgregarMultiples();
+      renderizarTablaPapeleraTrabajadores();
+    }
+
+    // Volver de planilla completa a info finca
+    function volverInfoFinca() {
+      document.getElementById('ventanaPlanilla').classList.add('hidden');
+      document.getElementById('infoFinca').classList.remove('hidden');
+    }
+
+    // Mostrar ventana de monitoreo de inversiones
+    function mostrarVentanaInversiones() {
+      document.getElementById('infoFinca').classList.add('hidden');
+      document.getElementById('ventanaInversiones').classList.remove('hidden');
+      actualizarTablaInversiones();
+    }
+
+    // Volver de monitoreo de inversiones a info finca
+    function volverInfoFincaDesdeInversiones() {
+      document.getElementById('ventanaInversiones').classList.add('hidden');
+      document.getElementById('infoFinca').classList.remove('hidden');
+    }
+
+    // Renderiza la tabla de planilla completa
+    function renderizarPlanillaCompleta() {
+      const tbody = document.getElementById('tablaPlanillaCompleta');
+      const filtro = document.getElementById('busquedaPlanillaCompleta').value.trim().toLowerCase();
+      let planilla = JSON.parse(localStorage.getItem('finca_planilla') || '[]');
+      const planillaFiltrada = planilla
+        .sort((a, b) => a.nombre.localeCompare(b.nombre))
+        .filter(emp => emp.nombre.toLowerCase().includes(filtro));
+      tbody.innerHTML = planillaFiltrada.map((emp, i) =>
+        `<tr>
+          <td class="border px-2 py-1">${i + 1}</td>
+          <td class="border px-2 py-1">${emp.nombre}</td>
+          <td class="border px-2 py-1">${emp.tipo}</td>
+          <td class="border px-2 py-1">$${emp.sueldo}</td>
+          <td class="border px-2 py-1 text-xs text-gray-500">${emp.fecha || ''}</td>
+          <td class="border px-2 py-1">
+            <select onchange="cambiarEstadoPlanilla('${emp.nombre.replace(/'/g,"\\'")}', '${emp.fecha}', this.value)" class="border rounded px-1 py-0.5 text-xs">
+              <option value="Sin pagar"${emp.estado === 'Sin pagar' || !emp.estado ? ' selected' : ''}>Sin pagar</option>
+              <option value="Pagado"${emp.estado === 'Pagado' ? ' selected' : ''}>Pagado</option>
+            </select>
+          </td>
+          <td class="border px-2 py-1">
+            <button onclick="eliminarTrabajador('${emp.nombre.replace(/'/g,"\\'")}', '${emp.fecha}')" class="text-red-600 hover:text-red-800" title="Eliminar">&#10006;</button>
+          </td>
+        </tr>`
+      ).join('');
+    }
+
+    // Renderiza la tabla de agregar múltiples trabajadores (debes tener la función ya implementada)
+    function renderizarTablaAgregarMultiples() {
+      const form = document.getElementById('formAgregarMultiples');
+      if (!form) return;
+      const tbody = form.querySelector('tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      for (let i = 0; i < 30; i++) {
+        tbody.innerHTML += `
+          <tr>
+            <td class="border px-2 py-1"><input type="text" name="nombre${i}" class="w-full border rounded px-1 py-0.5 text-xs" /></td>
+            <td class="border px-2 py-1">
+              <select name="tipo${i}" class="w-full border rounded px-1 py-0.5 text-xs">
+                <option value="">-</option>
+                <option value="Obrero">Obrero</option>
+                <option value="Capataz">Capataz</option>
+                <option value="Administrador">Administrador</option>
+                <option value="Temporal">Temporal</option>
+                <option value="Otro">Otro</option>
+              </select>
+            </td>
+            <td class="border px-2 py-1"><input type="number" name="sueldo${i}" class="w-full border rounded px-1 py-0.5 text-xs" min="0" /></td>
+          </tr>
+        `;
+      }
+    }
+    function actualizarTablaInversiones() {
+      let inversionesDetalladas = [];
+      try {
+        inversionesDetalladas = JSON.parse(localStorage.getItem('finca_inversiones_detalladas') || '[]');
+      } catch (e) { inversionesDetalladas = []; }
+      const tbody = document.getElementById('tablaInversiones');
+      const filtro = document.getElementById('busquedaInversiones').value.trim().toLowerCase();
+      const filtradas = inversionesDetalladas.filter(inv =>
+        inv.concepto?.toLowerCase().includes(filtro)
+      );
+      tbody.innerHTML = filtradas.map((inv, i) =>
+        `<tr>
+          <td class="border px-2 py-1">${i + 1}</td>
+          <td class="border px-2 py-1">$${inv.monto}</td>
+          <td class="border px-2 py-1">${inv.concepto}</td>
+          <td class="border px-2 py-1">${inv.fecha}</td>
+        </tr>`
+      ).join('');
+    }
+
+    // Filtros en tiempo real
+    document.getElementById('busquedaPlanillaCompleta').addEventListener('input', renderizarPlanillaCompleta);
+    document.getElementById('busquedaInversiones').addEventListener('input', actualizarTablaInversiones);
+
+    // --- MODO DE COLOR ---
+    function setModoColor(modo) {
+      const body = document.body;
+      if (modo === 'claro') {
+        body.classList.remove('bg-gray-900', 'text-white');
+        body.classList.add('bg-white', 'text-gray-900');
+        localStorage.setItem('modo_color', 'claro');
+      } else if (modo === 'oscuro') {
+        body.classList.remove('bg-white', 'text-gray-900');
+        body.classList.add('bg-gray-900', 'text-white');
+        localStorage.setItem('modo_color', 'oscuro');
+      } else if (modo === 'azul') {
+        body.classList.remove('bg-white', 'bg-gray-900', 'text-white', 'text-gray-900');
+        body.classList.add('bg-gradient-to-br', 'from-blue-500', 'to-green-400');
+        localStorage.setItem('modo_color', 'azul');
+      }
+    }
+
+    // Aplica el modo de color guardado al cargar
+    window.addEventListener('load', () => {
+      const modoGuardado = localStorage.getItem('modo_color') || 'claro';
+      setModoColor(modoGuardado);
+      if (modoGuardado === 'claro') {
+        document.getElementById('modoClaro').checked = true;
+      } else if (modoGuardado === 'oscuro') {
+        document.getElementById('modoOscuro').checked = true;
+      } else if (modoGuardado === 'azul') {
+        document.getElementById('modoAzul').checked = true;
+      }
+    });
+
+    // --- Panel de Finca: Cultivos y Ganado ---
+    let modoEdicionCultivo = false, idxEdicionCultivo = null;
+    let modoEdicionGanado = false, idxEdicionGanado = null;
+
+    function mostrarVentanaPanelFinca() {
+      document.getElementById('infoFinca').classList.add('hidden');
+      document.getElementById('ventanaPanelFinca').classList.remove('hidden');
+      renderizarCultivos();
+      renderizarGanado();
+    }
+    function volverInfoFincaDesdePanelFinca() {
+      document.getElementById('ventanaPanelFinca').classList.add('hidden');
+      document.getElementById('infoFinca').classList.remove('hidden');
+    }
+
+    // --- Cultivos ---
+    function renderizarCultivos() {
+      const usuario = localStorage.getItem('usuario_activo') || 'Invitado';
+      const cultivos = JSON.parse(localStorage.getItem('cultivos') || '[]').filter(c => c.usuario === usuario);
+      const cont = document.getElementById('listaCultivos');
+      cont.innerHTML = cultivos.length === 0
+        ? '<div class="text-gray-400">No hay cultivos registrados.</div>'
+        : cultivos.map((c, i) => `
+          <div class="flex items-center justify-between bg-gray-50 rounded-lg shadow p-3">
+            <div class="flex items-center gap-3">
+              <img src="${c.img || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=80&q=80'}" class="w-16 h-12 object-cover rounded" alt="">
+              <div>
+                <div class="text-gray-500 text-sm">${c.nombre}</div>
+                <div class="font-bold">${c.estado}</div>
+                <div class="text-xs text-gray-400">Ubicación: ${c.ubicacion || '-'}</div>
+                <div class="text-xs text-gray-400">Fecha siembra: ${c.fechaSiembra || '-'}</div>
+                <div class="text-xs text-gray-400">Notas: ${c.notas || '-'}</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="editarCultivo(${i})" class="text-blue-500 hover:text-blue-700 text-xl font-bold" title="Editar">&#9998;</button>
+              <button onclick="eliminarCultivo(${i})" class="text-red-500 hover:text-red-700 text-xl font-bold" title="Eliminar">&times;</button>
+            </div>
+          </div>
+        `).join('');
+    }
+
+    document.getElementById('formCultivo').onsubmit = function(e) {
+      e.preventDefault();
+      const usuario = localStorage.getItem('usuario_activo') || 'Invitado';
+      const nombre = document.getElementById('nombreCultivo').value.trim();
+      const estado = document.getElementById('estadoCultivo').value.trim();
+      const ubicacion = document.getElementById('ubicacionCultivo').value.trim();
+      const fechaSiembra = document.getElementById('fechaSiembraCultivo').value;
+      const notas = document.getElementById('notasCultivo').value.trim();
+      const img = document.getElementById('imgCultivo').value.trim();
+      if (!nombre || !estado) return;
+      let cultivos = JSON.parse(localStorage.getItem('cultivos') || '[]');
+      if (modoEdicionCultivo && idxEdicionCultivo !== null) {
+        const usuario = localStorage.getItem('usuario_activo') || 'Invitado';
+        const cultivosUsuario = cultivos.filter(c => c.usuario === usuario);
+        const idxGlobal = cultivos.findIndex((c, idx) => c.usuario === usuario && idx === idxEdicionCultivo);
+        if (idxGlobal !== -1) {
+          cultivos[idxGlobal] = { nombre, estado, ubicacion, fechaSiembra, notas, img, usuario };
+        }
+        modoEdicionCultivo = false;
+        idxEdicionCultivo = null;
+        document.getElementById('btnRegistrarCultivo').textContent = 'Registrar';
+      } else {
+        cultivos.push({ nombre, estado, ubicacion, fechaSiembra, notas, img, usuario });
+      }
+      localStorage.setItem('cultivos', JSON.stringify(cultivos));
+      e.target.reset();
+      renderizarCultivos();
+    };
+
+    function eliminarCultivo(idx) {
+      const usuario = localStorage.getItem('usuario_activo') || 'Invitado';
+      let cultivos = JSON.parse(localStorage.getItem('cultivos') || '[]');
+      const indicesUsuario = cultivos.map((c, i) => c.usuario === usuario ? i : -1).filter(i => i !== -1);
+      if (indicesUsuario[idx] !== undefined) {
+        cultivos.splice(indicesUsuario[idx], 1);
+        localStorage.setItem('cultivos', JSON.stringify(cultivos));
+        renderizarCultivos();
+      }
+    }
+
+    function editarCultivo(idx) {
+      const usuario = localStorage.getItem('usuario_activo') || 'Invitado';
+      let cultivos = JSON.parse(localStorage.getItem('cultivos') || '[]').filter(c => c.usuario === usuario);
+      const c = cultivos[idx];
+      document.getElementById('nombreCultivo').value = c.nombre;
+      document.getElementById('estadoCultivo').value = c.estado;
+      document.getElementById('ubicacionCultivo').value = c.ubicacion || '';
+      document.getElementById('fechaSiembraCultivo').value = c.fechaSiembra || '';
+      document.getElementById('notasCultivo').value = c.notas || '';
+      document.getElementById('imgCultivo').value = c.img || '';
+      modoEdicionCultivo = true;
+      idxEdicionCultivo = idx;
+      document.getElementById('btnRegistrarCultivo').textContent = 'Guardar cambios';
+    }
+
+    // --- Ganado ---
+    function renderizarGanado() {
+      const usuario = localStorage.getItem('usuario_activo') || 'Invitado';
+      const ganado = JSON.parse(localStorage.getItem('ganado') || '[]').filter(g => g.usuario === usuario);
+      const cont = document.getElementById('listaGanado');
+      cont.innerHTML = ganado.length === 0
+        ? '<div class="text-gray-400">No hay ganado registrado.</div>'
+        : ganado.map((g, i) => `
+          <div class="flex items-center justify-between bg-gray-50 rounded-lg shadow p-3">
+            <div class="flex items-center gap-3">
+              <img src="${g.img || 'https://images.unsplash.com/photo-1518717758536-85ae29035b6d?auto=format&fit=crop&w=80&q=80'}" class="w-16 h-12 object-cover rounded" alt="">
+              <div>
+                <div class="text-gray-500 text-sm">${g.nombre}</div>
+                <div class="font-bold">${g.estado}</div>
+                <div class="text-xs text-gray-400">Ubicación: ${g.ubicacion || '-'}</div>
+                <div class="text-xs text-gray-400">Fecha ingreso: ${g.fechaIngreso || '-'}</div>
+                <div class="text-xs text-gray-400">Notas: ${g.notas || '-'}</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="editarGanado(${i})" class="text-blue-500 hover:text-blue-700 text-xl font-bold" title="Editar">&#9998;</button>
+              <button onclick="eliminarGanado(${i})" class="text-red-500 hover:text-red-700 text-xl font-bold" title="Eliminar">&times;</button>
+            </div>
+          </div>
+        `).join('');
+    }
+
+    document.getElementById('formGanado').onsubmit = function(e) {
+      e.preventDefault();
+      const usuario = localStorage.getItem('usuario_activo') || 'Invitado';
+      const nombre = document.getElementById('nombreGanado').value.trim();
+      const estado = document.getElementById('estadoGanado').value.trim();
+      const ubicacion = document.getElementById('ubicacionGanado').value.trim();
+      const fechaIngreso = document.getElementById('fechaIngresoGanado').value;
+      const notas = document.getElementById('notasGanado').value.trim();
+      const img = document.getElementById('imgGanado').value.trim();
+      if (!nombre || !estado) return;
+      let ganado = JSON.parse(localStorage.getItem('ganado') || '[]');
+      if (modoEdicionGanado && idxEdicionGanado !== null) {
+        const usuario = localStorage.getItem('usuario_activo') || 'Invitado';
+        const ganadoUsuario = ganado.filter(g => g.usuario === usuario);
+        const idxGlobal = ganado.findIndex((g, idx) => g.usuario === usuario && idx === idxEdicionGanado);
+        if (idxGlobal !== -1) {
+          ganado[idxGlobal] = { nombre, estado, ubicacion, fechaIngreso, notas, img, usuario };
+        }
+        modoEdicionGanado = false;
+        idxEdicionGanado = null;
+        document.getElementById('btnRegistrarGanado').textContent = 'Registrar';
+      } else {
+        ganado.push({ nombre, estado, ubicacion, fechaIngreso, notas, img, usuario });
+      }
+      localStorage.setItem('ganado', JSON.stringify(ganado));
+      e.target.reset();
+      renderizarGanado();
+    };
+
+    function eliminarGanado(idx) {
+      const usuario = localStorage.getItem('usuario_activo') || 'Invitado';
+      let ganado = JSON.parse(localStorage.getItem('ganado') || '[]');
+      const indicesUsuario = ganado.map((g, i) => g.usuario === usuario ? i : -1).filter(i => i !== -1);
+      if (indicesUsuario[idx] !== undefined) {
+        ganado.splice(indicesUsuario[idx], 1);
+        localStorage.setItem('ganado', JSON.stringify(ganado));
+        renderizarGanado();
+      }
+    }
+
+    function editarGanado(idx) {
+      const usuario = localStorage.getItem('usuario_activo') || 'Invitado';
+      let ganado = JSON.parse(localStorage.getItem('ganado') || '[]').filter(g => g.usuario === usuario);
+      const g = ganado[idx];
+      document.getElementById('nombreGanado').value = g.nombre;
+      document.getElementById('estadoGanado').value = g.estado;
+      document.getElementById('ubicacionGanado').value = g.ubicacion || '';
+      document.getElementById('fechaIngresoGanado').value = g.fechaIngreso || '';
+      document.getElementById('notasGanado').value = g.notas || '';
+      document.getElementById('imgGanado').value = g.img || '';
+      modoEdicionGanado = true;
+      idxEdicionGanado = idx;
+      document.getElementById('btnRegistrarGanado').textContent = 'Guardar cambios';
+    }
+
+    // En panel-finca.html, al inicio del script
+    if (!localStorage.getItem('usuario_activo')) {
+      window.location.href = 'index.html'; // Redirige al login
+    }
+  </script>
+  <script src="perfil.js"></script>
+
+  <!-- Modal de Agenda Semanal -->
+  <div id="modalAgendaSemanal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative">
+      <button onclick="cerrarAgendaSemanal()" class="absolute top-2 right-2 text-gray-500 hover:text-red-600 text-xl font-bold">&times;</button>
+      <h2 class="text-xl font-bold text-indigo-700 mb-4 text-center">Agenda Semanal</h2>
+      <!-- Aquí puedes reutilizar el buscador y el resumen -->
+      <div class="mb-4 flex flex-col sm:flex-row gap-2 items-center">
+        <input type="text" id="busquedaTrabajadorSemanaModal" class="border rounded px-2 py-1" placeholder="Nombre del trabajador">
+        <input type="number" id="semanaTrabajadorModal" class="border rounded px-2 py-1 w-24" placeholder="Semana" min="1" max="53">
+      </div>
+      <div id="resumenTrabajadorSemanaModal" class="font-semibold text-blue-700 mb-4"></div>
+      <div class="flex gap-2 mt-2">
+        <button onclick="compartirResumenCorreo()" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-700 flex items-center gap-1">
+          <span data-feather="mail"></span> Compartir por Correo
+        </button>
+        <button onclick="compartirResumenWhatsApp()" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-700 flex items-center gap-1">
+          <span data-feather="send"></span> WhatsApp
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel de Finca -->
+  <div id="ventanaPanelFinca" class="hidden w-full max-w-3xl bg-white/95 rounded-2xl shadow-2xl p-8 flex flex-col items-center">
+    <button onclick="volverInfoFincaDesdePanelFinca()" class="self-start mb-4 text-blue-600 hover:underline flex items-center gap-2">
+      <span data-feather="arrow-left"></span> Volver
+    </button>
+    <h2 class="text-2xl font-bold text-blue-700 mb-4 text-center">Panel de Finca</h2>
+    <!-- Cultivos -->
+    <section class="w-full">
+      <h3 class="text-xl font-bold mb-4">Estado de Cultivos</h3>
+      <form id="formCultivo" class="flex flex-col sm:flex-row gap-2 mb-4">
+        <input id="nombreCultivo" class="border rounded px-2 py-1 flex-1" placeholder="Nombre del cultivo" required>
+        <input id="estadoCultivo" class="border rounded px-2 py-1 flex-1" placeholder="Estado (ej: Crecimiento sano)" required>
+        <input id="ubicacionCultivo" class="border rounded px-2 py-1 flex-1" placeholder="Ubicación">
+        <input id="fechaSiembraCultivo" type="date" class="border rounded px-2 py-1 w-40">
+        <input id="notasCultivo" class="border rounded px-2 py-1 flex-1" placeholder="Notas">
+        <input id="imgCultivo" class="border rounded px-2 py-1 flex-1" placeholder="URL imagen (opcional)">
+        <button id="btnRegistrarCultivo" class="bg-green-600 text-white px-3 rounded hover:bg-green-700">Registrar</button>
+      </form>
+      <div id="listaCultivos" class="space-y-4"></div>
+    </section>
+    <hr class="my-6 w-full">
+    <!-- Ganado -->
+    <section class="w-full">
+      <h3 class="text-xl font-bold mb-4">Ganado</h3>
+      <form id="formGanado" class="flex flex-col sm:flex-row gap-2 mb-4">
+        <input id="nombreGanado" class="border rounded px-2 py-1 flex-1" placeholder="Tipo de ganado" required>
+        <input id="estadoGanado" class="border rounded px-2 py-1 flex-1" placeholder="Estado (ej: Todo sano)" required>
+        <input id="ubicacionGanado" class="border rounded px-2 py-1 flex-1" placeholder="Ubicación">
+        <input id="fechaIngresoGanado" type="date" class="border rounded px-2 py-1 w-40" placeholder="Fecha de ingreso">
+        <input id="notasGanado" class="border rounded px-2 py-1 flex-1" placeholder="Notas">
+        <input id="imgGanado" class="border rounded px-2 py-1 flex-1" placeholder="URL imagen (opcional)">
+        <button id="btnRegistrarGanado" class="bg-blue-600 text-white px-3 rounded hover:bg-blue-700">Registrar</button>
+      </form>
+      <div id="listaGanado" class="space-y-4"></div>
+    </section>
+  </div>
+
+  <!-- Botón para abrir el panel de finca desde la portada -->
+  <!--
+<button onclick="mostrarVentanaPanelFinca()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 mt-4">
+  <span data-feather="activity"></span> Panel de Finca
+</button>
+-->
+</body>
+</html>

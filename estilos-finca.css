@@ -1,0 +1,128 @@
+/* Fondo general con gradiente suave y animación */
+body {
+  background: linear-gradient(135deg, #0f2027 0%, #2c5364 100%);
+  min-height: 100vh;
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+  overflow-x: hidden;
+  animation: fondoAnimado 12s ease-in-out infinite alternate;
+}
+
+@keyframes fondoAnimado {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+/* Glassmorphism para tarjetas principales */
+.glass, .bg-white\/90, .bg-white\/95 {
+  background: rgba(255,255,255,0.18) !important;
+  box-shadow: 0 8px 32px 0 rgba(31,38,135,0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 2rem;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+/* Botones con efecto neón */
+.neon-btn, .bg-blue-600, .bg-green-600, .bg-yellow-500, .bg-purple-600 {
+  box-shadow: 0 0 8px #38d39f, 0 0 16px #38d39f;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.neon-btn:hover, .bg-blue-600:hover, .bg-green-600:hover, .bg-yellow-500:hover, .bg-purple-600:hover {
+  box-shadow: 0 0 16px #38d39f, 0 0 32px #38d39f;
+  transform: scale(1.03);
+}
+
+/* Encabezados destacados */
+h1, h2, h3 {
+  letter-spacing: 0.02em;
+  font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
+  text-shadow: 0 2px 8px rgba(56, 211, 159, 0.15);
+}
+
+/* Inputs y selects personalizados */
+input, select, textarea {
+  border: 1.5px solid #38bdf8;
+  border-radius: 0.5rem;
+  background: rgba(255,255,255,0.7);
+  transition: border 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: #34d399;
+  box-shadow: 0 0 0 2px #38bdf8;
+}
+
+/* Tablas */
+table {
+  border-radius: 1rem;
+  overflow: hidden;
+  background: rgba(255,255,255,0.85);
+}
+th {
+  background: linear-gradient(90deg, #38bdf8 0%, #34d399 100%);
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+td {
+  background: rgba(255,255,255,0.85);
+  color: #222;
+}
+
+/* Scrollbar futurista */
+::-webkit-scrollbar {
+  width: 8px;
+  background: #2c5364;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #38bdf8 0%, #34d399 100%);
+  border-radius: 8px;
+}
+
+/* Divisores */
+.futuristic-divider, hr {
+  border: none;
+  height: 2px;
+  background: linear-gradient(90deg, #38d39f 0%, #38bdf8 100%);
+  margin: 2rem 0;
+  opacity: 0.5;
+  border-radius: 1px;
+}
+
+/* Modales */
+.fixed.inset-0.bg-black\/40 {
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+/* Botón de cerrar modal */
+button[onclick^="cerrar"], .close-modal {
+  background: transparent;
+  color: #f87171;
+  font-size: 1.5rem;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+button[onclick^="cerrar"]:hover, .close-modal:hover {
+  color: #b91c1c;
+}
+
+/* Animación de aparición para ventanas */
+.glass, .bg-white\/90, .bg-white\/95, .rounded-2xl {
+  animation: aparecerVentana 0.7s cubic-bezier(.68,-0.55,.27,1.55);
+}
+@keyframes aparecerVentana {
+  0% { opacity: 0; transform: scale(0.95) translateY(30px);}
+  100% { opacity: 1; transform: scale(1) translateY(0);}
+}
+
+/* Responsive para móviles */
+@media (max-width: 600px) {
+  .glass, .bg-white\/90, .bg-white\/95, .rounded-2xl {
+    border-radius: 1rem !important;
+    padding: 1rem !important;
+  }
+  h1, h2 { font-size: 1.5rem !important; }
+  h3 { font-size: 1.1rem !important; }
+}

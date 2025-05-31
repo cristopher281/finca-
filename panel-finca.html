@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Finca</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="futurista.css">
+</head>
+<body class="bg-gradient-to-br from-blue-500 to-green-400 min-h-screen flex items-center justify-center">
+  <div class="w-full max-w-3xl bg-white/95 rounded-2xl shadow-2xl p-8 flex flex-col items-center">
+    <h2 class="text-2xl font-bold text-blue-700 mb-4 text-center">Panel de Finca</h2>
+    <!-- Cultivos -->
+    <section class="w-full">
+      <h3 class="text-xl font-bold mb-4">Estado de Cultivos</h3>
+      <form id="formCultivo" class="flex flex-col sm:flex-row gap-2 mb-4">
+        <input id="nombreCultivo" class="border rounded px-2 py-1 flex-1" placeholder="Nombre del cultivo" required>
+        <input id="estadoCultivo" class="border rounded px-2 py-1 flex-1" placeholder="Estado (ej: Crecimiento sano)" required>
+        <input id="ubicacionCultivo" class="border rounded px-2 py-1 flex-1" placeholder="Ubicación">
+        <input id="fechaSiembraCultivo" type="date" class="border rounded px-2 py-1 w-40">
+        <input id="notasCultivo" class="border rounded px-2 py-1 flex-1" placeholder="Notas">
+        <input id="imgCultivo" class="border rounded px-2 py-1 flex-1" placeholder="URL imagen (opcional)">
+        <button id="btnRegistrarCultivo" class="bg-green-600 text-white px-3 rounded hover:bg-green-700">Registrar</button>
+      </form>
+      <div id="listaCultivos" class="space-y-4"></div>
+    </section>
+    <hr class="my-6 w-full">
+    <!-- Ganado -->
+    <section class="w-full">
+      <h3 class="text-xl font-bold mb-4">Ganado</h3>
+      <form id="formGanado" class="flex flex-col sm:flex-row gap-2 mb-4">
+        <input id="nombreGanado" class="border rounded px-2 py-1 flex-1" placeholder="Tipo de ganado" required>
+        <input id="estadoGanado" class="border rounded px-2 py-1 flex-1" placeholder="Estado (ej: Todo sano)" required>
+        <input id="ubicacionGanado" class="border rounded px-2 py-1 flex-1" placeholder="Ubicación">
+        <input id="fechaIngresoGanado" type="date" class="border rounded px-2 py-1 w-40" placeholder="Fecha de ingreso">
+        <input id="notasGanado" class="border rounded px-2 py-1 flex-1" placeholder="Notas">
+        <input id="imgGanado" class="border rounded px-2 py-1 flex-1" placeholder="URL imagen (opcional)">
+        <button id="btnRegistrarGanado" class="bg-blue-600 text-white px-3 rounded hover:bg-blue-700">Registrar</button>
+      </form>
+      <div id="listaGanado" class="space-y-4"></div>
+    </section>
+  </div>
+
+  <script>
+    // --- Panel de Finca: Cultivos y Ganado ---
+    let modoEdicionCultivo = false, idxEdicionCultivo = null;
+    let modoEdicionGanado = false, idxEdicionGanado = null;
+
+    // --- Cultivos ---
+    function renderizarCultivos() {
+      const usuario = localStorage.getItem('usuario_activo') || 'Invitado';
+      const cultivos = JSON.parse(localStorage.getItem('cultivos') || '[]').filter(c => c.usuario === usuario);
+      const cont = document.getElementById('listaCultivos');
+      cont.innerHTML = cultivos.length === 0
+        ? '<div class="text-gray-400">No hay cultivos registrados.</div>'
+        : cultivos.map((c, i) => `
+          <div class="flex items-center justify-between bg-gray-50 rounded-lg shadow p-3">
+            <div class="flex items-center gap-3">
+              <img src="${c.img || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=80&q=80'}" class="w-16 h-12 object-cover rounded" alt="">
+              <div>
+                <div class="text-gray-500 text-sm">${c.nombre}</div>
+                <div class="font-bold">${c.estado}</div>
+                <div class="text-xs text-gray-400">Ubicación: ${c.ubicacion || '-'}</div>
+                <div class="text-xs text-gray-400">Fecha siembra: ${c.fechaSiembra || '-'}</div>
+                <div class="text-xs text-gray-400">Notas: ${c.notas || '-'}</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="editarCultivo(${i})" class="text-blue-500 hover:text-blue-700 text-xl font-bold" title="Editar">&#9998;</button>
+              <button onclick="eliminarCultivo(${i})" class="text-red-500 hover:text-red-700 text-xl font-bold" title="Eliminar">&times;</button>
+            </div>
+          </div>
+        `).join('');
+    }
+
+    document.getElementById('formCultivo').onsubmit = function(e) {
+      e.preventDefault();
+      const usuario = localStorage.getItem('usuario_activo') || 'Invitado';
+      const nombre = document.getElementById('nombreCultivo').value.trim();
+      const estado = document.getElementById('estadoCultivo').value.trim();
+      const ubicacion = document.getElementById('ubicacionCultivo').value.trim();
+      const fechaSiembra = document.getElementById('fechaSiembraCultivo').value;
+      const notas = document.getElementById('notasCultivo').value.trim();
+      const img = document.getElementById('imgCultivo').value.trim();
+      if (!nombre || !estado) return;
+      let cultivos = JSON.parse(localStorage.getItem('cultivos') || '[]');
+      if (modoEdicionCultivo && idxEdicionCultivo !== null) {
+        const usuario = localStorage.getItem('usuario_activo') || 'Invitado';
+        const cultivosUsuario = cultivos.filter(c => c.usuario === usuario);
+        const idxGlobal = cultivos.findIndex((c, idx) => c.usuario === usuario && idx === idxEdicionCultivo);
+        if (idxGlobal !== -1) {
+          cultivos[idxGlobal] = { nombre, estado, ubicacion, fechaSiembra, notas, img, usuario };
+        }
+        modoEdicionCultivo = false;
+        idxEdicionCultivo = null;
+        document.getElementById('btnRegistrarCultivo').textContent = 'Registrar';
+      } else {
+        cultivos.push({ nombre, estado, ubicacion, fechaSiembra, notas, img, usuario });
+      }
+      localStorage.setItem('cultivos', JSON.stringify(cultivos));
+      e.target.reset();
+      renderizarCultivos();
+    };
+
+    function eliminarCultivo(idx) {
+      const usuario = localStorage.getItem('usuario_activo') || 'Invitado';
+      let cultivos = JSON.parse(localStorage.getItem('cultivos') || '[]');
+      const indicesUsuario = cultivos.map((c, i) => c.usuario === usuario ? i : -1).filter(i => i !== -1);
+      if (indicesUsuario[idx] !== undefined) {
+        cultivos.splice(indicesUsuario[idx], 1);
+        localStorage.setItem('cultivos', JSON.stringify(cultivos));
+        renderizarCultivos();
+      }
+    }
+
+    function editarCultivo(idx) {
+      const usuario = localStorage.getItem('usuario_activo') || 'Invitado';
+      let cultivos = JSON.parse(localStorage.getItem('cultivos') || '[]').filter(c => c.usuario === usuario);
+      const c = cultivos[idx];
+      document.getElementById('nombreCultivo').value = c.nombre;
+      document.getElementById('estadoCultivo').value = c.estado;
+      document.getElementById('ubicacionCultivo').value = c.ubicacion || '';
+      document.getElementById('fechaSiembraCultivo').value = c.fechaSiembra || '';
+      document.getElementById('notasCultivo').value = c.notas || '';
+      document.getElementById('imgCultivo').value = c.img || '';
+      modoEdicionCultivo = true;
+      idxEdicionCultivo = idx;
+      document.getElementById('btnRegistrarCultivo').textContent = 'Guardar cambios';
+    }
+
+    // --- Ganado ---
+    function renderizarGanado() {
+      const usuario = localStorage.getItem('usuario_activo') || 'Invitado';
+      const ganado = JSON.parse(localStorage.getItem('ganado') || '[]').filter(g => g.usuario === usuario);
+      const cont = document.getElementById('listaGanado');
+      cont.innerHTML = ganado.length === 0
+        ? '<div class="text-gray-400">No hay ganado registrado.</div>'
+        : ganado.map((g, i) => `
+          <div class="flex items-center justify-between bg-gray-50 rounded-lg shadow p-3">
+            <div class="flex items-center gap-3">
+              <img src="${g.img || 'https://images.unsplash.com/photo-1518717758536-85ae29035b6d?auto=format&fit=crop&w=80&q=80'}" class="w-16 h-12 object-cover rounded" alt="">
+              <div>
+                <div class="text-gray-500 text-sm">${g.nombre}</div>
+                <div class="font-bold">${g.estado}</div>
+                <div class="text-xs text-gray-400">Ubicación: ${g.ubicacion || '-'}</div>
+                <div class="text-xs text-gray-400">Fecha ingreso: ${g.fechaIngreso || '-'}</div>
+                <div class="text-xs text-gray-400">Notas: ${g.notas || '-'}</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="editarGanado(${i})" class="text-blue-500 hover:text-blue-700 text-xl font-bold" title="Editar">&#9998;</button>
+              <button onclick="eliminarGanado(${i})" class="text-red-500 hover:text-red-700 text-xl font-bold" title="Eliminar">&times;</button>
+            </div>
+          </div>
+        `).join('');
+    }
+
+    document.getElementById('formGanado').onsubmit = function(e) {
+      e.preventDefault();
+      const usuario = localStorage.getItem('usuario_activo') || 'Invitado';
+      const nombre = document.getElementById('nombreGanado').value.trim();
+      const estado = document.getElementById('estadoGanado').value.trim();
+      const ubicacion = document.getElementById('ubicacionGanado').value.trim();
+      const fechaIngreso = document.getElementById('fechaIngresoGanado').value;
+      const notas = document.getElementById('notasGanado').value.trim();
+      const img = document.getElementById('imgGanado').value.trim();
+      if (!nombre || !estado) return;
+      let ganado = JSON.parse(localStorage.getItem('ganado') || '[]');
+      if (modoEdicionGanado && idxEdicionGanado !== null) {
+        const usuario = localStorage.getItem('usuario_activo') || 'Invitado';
+        const ganadoUsuario = ganado.filter(g => g.usuario === usuario);
+        const idxGlobal = ganado.findIndex((g, idx) => g.usuario === usuario && idx === idxEdicionGanado);
+        if (idxGlobal !== -1) {
+          ganado[idxGlobal] = { nombre, estado, ubicacion, fechaIngreso, notas, img, usuario };
+        }
+        modoEdicionGanado = false;
+        idxEdicionGanado = null;
+        document.getElementById('btnRegistrarGanado').textContent = 'Registrar';
+      } else {
+        ganado.push({ nombre, estado, ubicacion, fechaIngreso, notas, img, usuario });
+      }
+      localStorage.setItem('ganado', JSON.stringify(ganado));
+      e.target.reset();
+      renderizarGanado();
+    };
+
+    function eliminarGanado(idx) {
+      const usuario = localStorage.getItem('usuario_activo') || 'Invitado';
+      let ganado = JSON.parse(localStorage.getItem('ganado') || '[]');
+      const indicesUsuario = ganado.map((g, i) => g.usuario === usuario ? i : -1).filter(i => i !== -1);
+      if (indicesUsuario[idx] !== undefined) {
+        ganado.splice(indicesUsuario[idx], 1);
+        localStorage.setItem('ganado', JSON.stringify(ganado));
+        renderizarGanado();
+      }
+    }
+
+    function editarGanado(idx) {
+      const usuario = localStorage.getItem('usuario_activo') || 'Invitado';
+      let ganado = JSON.parse(localStorage.getItem('ganado') || '[]').filter(g => g.usuario === usuario);
+      const g = ganado[idx];
+      document.getElementById('nombreGanado').value = g.nombre;
+      document.getElementById('estadoGanado').value = g.estado;
+      document.getElementById('ubicacionGanado').value = g.ubicacion || '';
+      document.getElementById('fechaIngresoGanado').value = g.fechaIngreso || '';
+      document.getElementById('notasGanado').value = g.notas || '';
+      document.getElementById('imgGanado').value = g.img || '';
+      modoEdicionGanado = true;
+      idxEdicionGanado = idx;
+      document.getElementById('btnRegistrarGanado').textContent = 'Guardar cambios';
+    }
+
+    // Inicializar
+    renderizarCultivos();
+    renderizarGanado();
+  </script>
+</body>
+</html>

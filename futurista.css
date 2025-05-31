@@ -1,0 +1,29 @@
+/* Modo claro */
+.modo-claro {
+  background: #f4f4f4 !important;
+  color: #222 !important;
+}
+.modo-claro .bg-white\/90, .modo-claro .bg-white\/95, .modo-claro .rounded-2xl, .modo-claro .glass {
+  background: #fff !important;
+  color: #222 !important;
+}
+
+/* Modo azul */
+.modo-azul {
+  background: linear-gradient(135deg, #2563eb 0%, #38bdf8 100%) !important;
+  color: #e6eaf3 !important;
+}
+.modo-azul .bg-white\/90, .modo-azul .bg-white\/95, .modo-azul .rounded-2xl, .modo-azul .glass {
+  background: #e0f2fe !important;
+  color: #222 !important;
+}
+
+/* Modo oscuro */
+.modo-oscuro {
+  background: linear-gradient(135deg, #232526 0%, #414345 100%) !important;
+  color: #e6eaf3 !important;
+}
+.modo-oscuro .bg-white\/90, .modo-oscuro .bg-white\/95, .modo-oscuro .rounded-2xl, .modo-oscuro .glass {
+  background: #232526 !important;
+  color: #e6eaf3 !important;
+}
