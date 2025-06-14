@@ -2,35 +2,50 @@
 
 ## Descripción del Proyecto
 
-Registro de Fincas Valladares es una aplicación web diseñada para gestionar y registrar fincas de manera eficiente. Permite a los usuarios administrar sus fincas utilizando las capacidades de sus dispositivos, facilitando el seguimiento de ingresos, egresos, inversiones y trabajadores.
+**Registro de Fincas Valladares** es una innovadora aplicación web diseñada para la gestión eficiente de fincas. Con un enfoque en la usabilidad y la funcionalidad, esta herramienta permite a los usuarios administrar sus fincas de manera integral, facilitando el seguimiento de ingresos, egresos, inversiones y la gestión de trabajadores.
+
+![Logo del Proyecto](ruta/a/tu/logo.png) <!-- Reemplaza con la ruta a tu logo -->
 
 ## Características Principales
 
-- **Inicio de Sesión**: Los usuarios pueden iniciar sesión y crear contraseñas para acceder a sus cuentas.
-  
-- **Registro de Fincas**: Los usuarios pueden registrar nuevas fincas ingresando el nombre y las coordenadas del terreno.
-  
-- **Gestión Financiera**: 
-  - Registro de ingresos y egresos.
-  - Monitoreo de inversiones rápidas y monitoreadas.
-  
-- **Planilla de Trabajadores**: 
-  - Agregar y gestionar trabajadores con diferentes tipos de roles (obrero, capataz, administrador, etc.).
-  - Resumen semanal de sueldos y estado de los trabajadores.
-  
-- **Subida de Documentos**: Permite a los usuarios subir recibos o documentos en varios formatos (imagen, PDF, CSV, JSON).
-  
-- **Gráficos**: Generación de gráficos para visualizar datos financieros (barras, pastel, burbuja, histograma).
-  
-- **Perfil de Usuario**: Los usuarios pueden editar su perfil y guardar cambios.
+### 1. Inicio de Sesión Seguro
+Los usuarios pueden iniciar sesión y crear contraseñas seguras para acceder a sus cuentas, garantizando la protección de sus datos.
+
+### 2. Registro de Fincas
+Permite a los usuarios registrar nuevas fincas ingresando el nombre y las coordenadas del terreno, facilitando la localización y gestión.
+
+### 3. Gestión Financiera
+- **Registro de Ingresos y Egresos**: Lleva un control detallado de las transacciones financieras.
+- **Monitoreo de Inversiones**: Visualiza inversiones rápidas y monitoreadas con gráficos interactivos.
+
+### 4. Planilla de Trabajadores
+- Agrega y gestiona trabajadores con diferentes roles (obrero, capataz, administrador, etc.).
+- Resumen semanal de sueldos y estado de los trabajadores.
+
+### 5. Subida de Documentos
+Los usuarios pueden subir recibos o documentos en varios formatos (imagen, PDF, CSV, JSON) para mantener un registro completo.
+
+### 6. Visualización de Datos
+Generación de gráficos interactivos para visualizar datos financieros, incluyendo:
+
+#### Gráfico de Ingresos y Egresos
+![Gráfico de Ingresos y Egresos](ruta/a/grafico_ingresos_egresos.png) <!-- Reemplaza con la ruta a tu gráfico -->
+
+#### Distribución de Gastos por Categoría
+![Gráfico de Gastos](ruta/a/grafico_gastos.png) <!-- Reemplaza con la ruta a tu gráfico -->
+
+#### Análisis de Inversiones
+![Gráfico de Inversiones](ruta/a/grafico_inversiones.png) <!-- Reemplaza con la ruta a tu gráfico -->
+
+### 7. Perfil de Usuario
+Los usuarios pueden editar su perfil y guardar cambios, personalizando su experiencia en la aplicación.
 
 ## Tecnologías Utilizadas
 
-- HTML
-- CSS
-- JavaScript
-- Frameworks de visualización de datos (para gráficos)
-- Backend (si aplica)
+- **Frontend**: HTML, CSS, JavaScript
+- **Frameworks de Visualización**: Chart.js, D3.js (o el que estés utilizando)
+- **Backend**: Node.js, Express (o el que estés utilizando)
+- **Base de Datos**: MongoDB, MySQL (o el que estés utilizando)
 
 ## Instrucciones de Instalación
 
